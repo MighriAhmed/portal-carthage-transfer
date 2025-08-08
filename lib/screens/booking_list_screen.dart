@@ -10,6 +10,7 @@ import 'package:portal_carthage_transfer/widgets/booking_card.dart';
 import 'package:portal_carthage_transfer/widgets/filter_dialog.dart';
 import 'package:portal_carthage_transfer/widgets/booking_form_dialog.dart';
 import 'package:portal_carthage_transfer/widgets/supplier_form_dialog.dart';
+import 'package:portal_carthage_transfer/screens/booking_detail_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class BookingListScreen extends StatefulWidget {
@@ -29,7 +30,9 @@ class _BookingListScreenState extends State<BookingListScreen> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialData();
+    });
   }
 
   @override
@@ -96,7 +99,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
           isSupplier: true,
         );
       } else {
-        // Admins can use all filters including date and supplier
+        // Admins can apply all filters
         await bookingProvider.fetchBookings(
           context,
           bookingId: _searchController.text.trim(),
@@ -104,6 +107,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
           supplier: _selectedSupplier,
           startDate: _startDate,
           endDate: _endDate,
+          setLoading: true,
         );
       }
     }
@@ -117,18 +121,11 @@ class _BookingListScreenState extends State<BookingListScreen> {
     
     if (mounted) {
       if (authProvider.user?.isSupplier == true) {
-        // Suppliers see all latest bookings without date filter
-        await bookingProvider.fetchLatestBookings(
-          context,
-          status: _selectedStatus,
-        );
+        // Suppliers see latest bookings without filters
+        await bookingProvider.fetchLatestBookings(context);
       } else {
-        // Admins see latest bookings with date filter
-        await bookingProvider.fetchLatestBookings(
-          context,
-          fromDate: _startDate,
-          status: _selectedStatus,
-        );
+        // Admins see latest bookings with supplier filter
+        await bookingProvider.fetchLatestBookings(context);
       }
     }
   }
@@ -157,15 +154,39 @@ class _BookingListScreenState extends State<BookingListScreen> {
   void _showAddBookingDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => const BookingFormDialog(),
-    );
+    ).then((result) {
+      if (result == true) {
+        _applyFilters();
+      }
+    });
   }
 
   void _showAddSupplierDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => const SupplierFormDialog(),
-    );
+    ).then((result) {
+      if (result == true) {
+        // Refresh suppliers list
+        final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+        bookingProvider.fetchSuppliers(context);
+      }
+    });
+  }
+
+  void _showEditBookingDialog(Booking booking) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => BookingFormDialog(booking: booking),
+    ).then((result) {
+      if (result == true) {
+        _applyFilters();
+      }
+    });
   }
 
   void _showWhatsAppLanguageDialog(Booking booking) {
@@ -175,46 +196,19 @@ class _BookingListScreenState extends State<BookingListScreen> {
     );
   }
 
-  void _showEditBookingDialog(Booking booking) {
-    showDialog(
-      context: context,
-      builder: (context) => BookingFormDialog(booking: booking),
-    );
-  }
-
-  void _printBookings() {
-    if (!kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Printing is only available on web'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-  }
-
-  void _printDetailedOrder() {
-    if (!kIsWeb) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Printing is only available on web'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-  }
-
-
-
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final bookingProvider = Provider.of<BookingProvider>(context);
     final user = authProvider.user;
+    
+    // Calculate available height for the list
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final availableHeight = screenHeight - keyboardHeight - 200; // Account for app bar and safe areas
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Bookings'),
         actions: [
@@ -228,145 +222,143 @@ class _BookingListScreenState extends State<BookingListScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search and filter bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    hintText: 'Search by Booking ID...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        _applyFilters();
-                      },
-                    ),
-                    border: const OutlineInputBorder(),
-                  ),
-                  onSubmitted: (_) => _applyFilters(),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Search and filter bar
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search by Booking ID...',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.clear),
                         onPressed: () {
-                          setState(() {
-                            _selectedStatus = '';
-                            _selectedSupplier = '';
-                          });
+                          _searchController.clear();
                           _applyFilters();
                         },
-                        icon: const Icon(Icons.list),
-                        label: const Text('All Bookings'),
                       ),
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _loadLatestBookings,
-                        icon: const Icon(Icons.new_releases),
-                        label: const Text('Latest'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-                if (user?.isAdmin == true) ...[
-                  const SizedBox(height: 8),
+                    onSubmitted: (_) => _applyFilters(),
+                  ),
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _showAddBookingDialog,
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Booking'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF4C542),
-                          ),
+                          onPressed: () {
+                            setState(() {
+                              _selectedStatus = '';
+                              _selectedSupplier = '';
+                            });
+                            _applyFilters();
+                          },
+                          icon: const Icon(Icons.list),
+                          label: const Text('All Bookings'),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: _showAddSupplierDialog,
-                          icon: const Icon(Icons.person_add),
-                          label: const Text('Add Supplier'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF4C542),
-                          ),
+                          onPressed: _loadLatestBookings,
+                          icon: const Icon(Icons.new_releases),
+                          label: const Text('Latest'),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ],
-            ),
-          ),
-
-          // Bookings list
-          Expanded(
-            child: bookingProvider.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : bookingProvider.error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Colors.red[300],
+                  if (user?.isAdmin == true) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddBookingDialog,
+                            icon: const Icon(Icons.add),
+                            label: const Text('Add Booking'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF808080),
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              bookingProvider.error!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.red[700]),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _applyFilters,
-                              child: const Text('Retry'),
-                            ),
-                          ],
+                          ),
                         ),
-                      )
-                    : bookingProvider.bookings.isEmpty
-                        ? const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.inbox_outlined,
-                                  size: 64,
-                                  color: Colors.grey,
-                                ),
-                                SizedBox(height: 16),
-                                Text(
-                                  'No bookings found',
-                                  style: TextStyle(
-                                    fontSize: 18,
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: _showAddSupplierDialog,
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('Add Supplier'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF808080),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            // Bookings list
+            Expanded(
+              child: bookingProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : bookingProvider.error != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 64,
+                                color: Colors.red[300],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                bookingProvider.error!,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.red[700]),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _applyFilters,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : bookingProvider.bookings.isEmpty
+                          ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.inbox_outlined,
+                                    size: 64,
                                     color: Colors.grey,
                                   ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.all(16),
-                            itemCount: bookingProvider.bookings.length,
-                            itemBuilder: (context, index) {
-                              final booking = bookingProvider.bookings[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: BookingCard(
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'No bookings found',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: bookingProvider.bookings.length,
+                              itemBuilder: (context, index) {
+                                final booking = bookingProvider.bookings[index];
+                                return BookingCard(
                                   booking: booking,
                                   user: user,
                                   onEdit: () {
@@ -400,12 +392,19 @@ class _BookingListScreenState extends State<BookingListScreen> {
 
                                     if (confirmed == true && mounted) {
                                       final success = await provider.deleteBooking(context, bookingId);
-                                      if (success) {
-                                        // Success - the booking was deleted from the list
+                                      if (success && mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Booking deleted successfully'),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
                                       }
                                     }
                                   },
-                                  onWhatsApp: () => _showWhatsAppLanguageDialog(booking),
+                                  onWhatsApp: () {
+                                    _showWhatsAppLanguageDialog(booking);
+                                  },
                                   onSupplierWhatsApp: () {
                                     final phone = bookingProvider.getSupplierPhone(booking.supplier ?? '');
                                     if (phone != null) {
@@ -427,17 +426,18 @@ class _BookingListScreenState extends State<BookingListScreen> {
                                       );
                                     }
                                   },
-                                ),
-                              );
-                            },
-                          ),
-          ),
-        ],
+                                );
+                              },
+                            ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
+// Language Selection Dialog for WhatsApp
 class LanguageSelectionDialog extends StatefulWidget {
   final Booking booking;
 
@@ -454,19 +454,28 @@ class _LanguageSelectionDialogState extends State<LanguageSelectionDialog> {
   String _selectedLanguage = 'en';
 
   void _sendWhatsAppMessage(String language) {
-    if (widget.booking.phoneNumber == null || widget.booking.phoneNumber!.isEmpty) {
+    final phoneNumber = widget.booking.phoneNumber;
+    if (phoneNumber == null || phoneNumber.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No phone number available for this booking.')),
+        const SnackBar(
+          content: Text('No phone number available for this booking'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
 
-    final formattedNumber = widget.booking.phoneNumber!.replaceAll(RegExp(r'[^0-9]'), '');
+    // Format phone number (remove spaces, add country code if needed)
+    String formattedNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
+    if (!formattedNumber.startsWith('+')) {
+      // Add country code if not present (assuming Tunisia +216)
+      formattedNumber = '+216$formattedNumber';
+    }
+
     final dateFormat = DateFormat('dd/MM/yyyy');
     final timeFormat = DateFormat('HH:mm');
-    
-    String message = '';
-    
+
+    String message;
     switch (language) {
       case 'en':
         message = '''Hello! Your transfer booking #${widget.booking.bookingId} has been confirmed.
@@ -504,6 +513,17 @@ Merci !''';
 Bei Fragen kontaktieren Sie uns bitte.
 Vielen Dank!''';
         break;
+      default:
+        message = '''Hello! Your transfer booking #${widget.booking.bookingId} has been confirmed.
+
+📅 Date: ${dateFormat.format(widget.booking.pickupDateTime)}
+🕐 Time: ${timeFormat.format(widget.booking.pickupDateTime)}
+📍 Pickup: ${widget.booking.addresses.isNotEmpty ? widget.booking.addresses.first : 'TBD'}
+👥 Passengers: ${widget.booking.passengersNumber}
+🚗 Vehicle: ${widget.booking.vehicleName?.isNotEmpty == true ? widget.booking.vehicleName : 'TBD'}
+
+For any questions, please contact us.
+Thank you!''';
     }
     
     final whatsappUrl = '${AppConstants.whatsappBaseUrl}$formattedNumber?text=${Uri.encodeComponent(message)}';

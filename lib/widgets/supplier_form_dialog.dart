@@ -46,7 +46,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -55,7 +55,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
           filled: true,
           fillColor: Colors.grey[50],
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          labelStyle: const TextStyle(color: Color(0xFF666666)),
+          labelStyle: const TextStyle(color: Color(0xFF808080)),
         ),
         validator: validator ?? (isRequired ? (value) {
           if (value == null || value.trim().isEmpty) {
@@ -90,7 +90,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -99,11 +99,11 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
           filled: true,
           fillColor: Colors.grey[50],
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          labelStyle: const TextStyle(color: Color(0xFF666666)),
+          labelStyle: const TextStyle(color: Color(0xFF808080)),
           suffixIcon: IconButton(
             icon: Icon(
               _obscurePassword ? Icons.visibility : Icons.visibility_off,
-              color: Colors.grey[600],
+              color: Color(0xFF808080),
             ),
             onPressed: () {
               setState(() {
@@ -179,7 +179,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
-                color: Color(0xFFF4C542),
+                color: Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -187,17 +187,11 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.person_add,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
                       'Add New Supplier',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Colors.black87,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -205,9 +199,9 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black87),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.grey[100],
                     ),
                   ),
                 ],
@@ -231,7 +225,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFFF4C542),
+                            color: Color(0xFF808080),
                           ),
                         ),
                       ),
@@ -327,7 +321,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFFF4C542)),
+                        side: const BorderSide(color: Color(0xFF808080)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -335,7 +329,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
                       child: const Text(
                         'Cancel',
                         style: TextStyle(
-                          color: Color(0xFFF4C542),
+                          color: Color(0xFF808080),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
@@ -347,7 +341,7 @@ class _SupplierFormDialogState extends State<SupplierFormDialog> {
                     child: ElevatedButton(
                       onPressed: bookingProvider.isLoading ? null : _saveSupplier,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF4C542),
+                        backgroundColor: const Color(0xFF808080),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

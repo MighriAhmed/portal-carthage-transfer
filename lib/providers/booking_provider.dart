@@ -202,9 +202,12 @@ class BookingProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print('Suppliers API response: $data');
         _suppliers = List<Map<String, dynamic>>.from(data['suppliers'] ?? []);
+        print('Parsed suppliers: $_suppliers');
       }
     } catch (e) {
+      print('Error fetching suppliers: $e');
       // Don't show error for suppliers fetch
     }
   }
@@ -355,6 +358,67 @@ class BookingProvider extends ChangeNotifier {
           }
         } catch (e) {
           _error = 'Failed to add supplier (Status: ${response.statusCode})';
+        }
+        return false;
+      }
+    } catch (e) {
+      _error = 'Network error: ${e.toString()}';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Update supplier
+  Future<bool> updateSupplier(BuildContext context, String supplierName, Map<String, dynamic> updateData) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      // Get auth headers and add Content-Type
+      final headers = Map<String, String>.from(_getAuthHeaders(context));
+      headers['Content-Type'] = 'application/json';
+
+      // Add the supplier name to the update data
+      final dataToSend = Map<String, dynamic>.from(updateData);
+      dataToSend['supplier_name'] = supplierName;
+
+      final url = '${AppConstants.apiUrl}${AppConstants.suppliersEndpoint}';
+      print('Update supplier URL: $url');
+      print('Update supplier data: $dataToSend');
+      print('Update supplier headers: $headers');
+
+      final response = await http.patch(
+        Uri.parse(url),
+        headers: headers,
+        body: jsonEncode(dataToSend),
+      );
+
+      print('Update supplier response status: ${response.statusCode}');
+      print('Update supplier response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        // Refresh the suppliers list
+        await fetchSuppliers(context);
+        return true;
+      } else {
+        // Parse error response for better error message
+        try {
+          final errorData = jsonDecode(response.body);
+          if (errorData is Map<String, dynamic>) {
+            if (errorData.containsKey('detail')) {
+              _error = 'Failed to update supplier: ${errorData['detail']}';
+            } else if (errorData.containsKey('message')) {
+              _error = 'Failed to update supplier: ${errorData['message']}';
+            } else {
+              _error = 'Failed to update supplier (Status: ${response.statusCode})';
+            }
+          } else {
+            _error = 'Failed to update supplier (Status: ${response.statusCode})';
+          }
+        } catch (e) {
+          _error = 'Failed to update supplier (Status: ${response.statusCode})';
         }
         return false;
       }

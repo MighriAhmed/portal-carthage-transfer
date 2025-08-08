@@ -1,6 +1,6 @@
 class AppConstants {
   // API Configuration
-  static const String baseUrl = 'http://192.168.122.225:8000'; // Direct connection to backend
+  static const String baseUrl = 'http://192.168.1.119:8000'; // Direct connection to backend
   static const String apiUrl = '$baseUrl';
   
   // API Endpoints

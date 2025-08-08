@@ -260,7 +260,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
         style: const TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.w600,
-          color: Color(0xFFF4C542),
+          color: Color(0xFF808080),
         ),
       ),
     );
@@ -294,7 +294,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -303,7 +303,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
           filled: true,
           fillColor: Colors.grey[50],
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          labelStyle: const TextStyle(color: Color(0xFF666666)),
+          labelStyle: const TextStyle(color: Color(0xFF808080)),
         ),
         validator: validator ?? (isRequired ? (value) {
           if (value == null || value.trim().isEmpty) {
@@ -338,16 +338,16 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
+            borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
           ),
           filled: true,
           fillColor: Colors.grey[50],
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          labelStyle: const TextStyle(color: Color(0xFF666666)),
+          labelStyle: const TextStyle(color: Color(0xFF808080)),
         ),
         items: items,
         onChanged: onChanged,
-        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFF4C542)),
+        icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF808080)),
         dropdownColor: Colors.white,
         style: const TextStyle(color: Colors.black87),
       ),
@@ -369,7 +369,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
           ),
           child: Row(
             children: [
-              const Icon(Icons.calendar_today, color: Color(0xFFF4C542)),
+              const Icon(Icons.calendar_today, color: Color(0xFF808080)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -379,7 +379,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                       'Pickup Date & Time *',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF666666),
+                        color: Color(0xFF808080),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -396,7 +396,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF666666)),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF808080)),
             ],
           ),
         ),
@@ -422,7 +422,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: const BoxDecoration(
-                color: Color(0xFFF4C542),
+                color: Colors.white,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -430,17 +430,11 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
               ),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       widget.booking != null ? 'Edit Booking' : 'Add Booking',
                       style: const TextStyle(
-                        color: Colors.white,
+                        color: Colors.black87,
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
                       ),
@@ -448,9 +442,9 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: Colors.black87),
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.grey[100],
                     ),
                   ),
                 ],
@@ -542,24 +536,16 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                       // Customer Information Section
                       _buildSectionTitle('Customer Information'),
                       
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'First Name',
-                              controller: _firstNameController,
-                              isRequired: true,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'Last Name',
-                              controller: _lastNameController,
-                              isRequired: true,
-                            ),
-                          ),
-                        ],
+                      _buildFormField(
+                        label: 'First Name',
+                        controller: _firstNameController,
+                        isRequired: true,
+                      ),
+
+                      _buildFormField(
+                        label: 'Last Name',
+                        controller: _lastNameController,
+                        isRequired: true,
                       ),
 
                       _buildFormField(
@@ -568,24 +554,16 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         keyboardType: TextInputType.emailAddress,
                       ),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'Phone Number',
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'WhatsApp',
-                              controller: _whatsappController,
-                              keyboardType: TextInputType.phone,
-                            ),
-                          ),
-                        ],
+                      _buildFormField(
+                        label: 'Phone Number',
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                      ),
+
+                      _buildFormField(
+                        label: 'WhatsApp',
+                        controller: _whatsappController,
+                        keyboardType: TextInputType.phone,
                       ),
 
                       _buildFormField(
@@ -601,140 +579,124 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         controller: _vehicleNameController,
                       ),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: TextFormField(
-                                controller: TextEditingController(text: _passengersNumber.toString()),
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: 'Passengers *',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  labelStyle: const TextStyle(color: Color(0xFF666666)),
-                                ),
-                                onChanged: (value) {
-                                  _passengersNumber = int.tryParse(value) ?? 1;
-                                },
-                              ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: TextFormField(
+                          controller: TextEditingController(text: _passengersNumber.toString()),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Passengers *',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: TextFormField(
-                                controller: TextEditingController(text: _distance.toString()),
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: 'Distance',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  labelStyle: const TextStyle(color: Color(0xFF666666)),
-                                ),
-                                onChanged: (value) {
-                                  _distance = double.tryParse(value) ?? 0.0;
-                                },
-                              ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            labelStyle: const TextStyle(color: Color(0xFF808080)),
                           ),
-                        ],
+                          onChanged: (value) {
+                            _passengersNumber = int.tryParse(value) ?? 1;
+                          },
+                        ),
                       ),
 
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: TextFormField(
-                                controller: TextEditingController(text: _price.toString()),
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: 'Price',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  labelStyle: const TextStyle(color: Color(0xFF666666)),
-                                ),
-                                onChanged: (value) {
-                                  _price = double.tryParse(value) ?? 0.0;
-                                },
-                              ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: TextFormField(
+                          controller: TextEditingController(text: _distance.toString()),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Distance',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 16.0),
-                              child: TextFormField(
-                                controller: TextEditingController(text: _earning.toString()),
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  labelText: 'Earning',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(color: Color(0xFFF4C542), width: 2),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey[50],
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                  labelStyle: const TextStyle(color: Color(0xFF666666)),
-                                ),
-                                onChanged: (value) {
-                                  _earning = double.tryParse(value) ?? 0.0;
-                                },
-                              ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
                             ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            labelStyle: const TextStyle(color: Color(0xFF808080)),
                           ),
-                        ],
+                          onChanged: (value) {
+                            _distance = double.tryParse(value) ?? 0.0;
+                          },
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: TextFormField(
+                          controller: TextEditingController(text: _price.toString()),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Price',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            labelStyle: const TextStyle(color: Color(0xFF808080)),
+                          ),
+                          onChanged: (value) {
+                            _price = double.tryParse(value) ?? 0.0;
+                          },
+                        ),
+                      ),
+
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: TextFormField(
+                          controller: TextEditingController(text: _earning.toString()),
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Earning',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            labelStyle: const TextStyle(color: Color(0xFF808080)),
+                          ),
+                          onChanged: (value) {
+                            _earning = double.tryParse(value) ?? 0.0;
+                          },
+                        ),
                       ),
 
                       _buildDropdownField(
@@ -755,23 +717,15 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                       // Driver Information Section
                       _buildSectionTitle('Driver Information'),
                       
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'Driver Name',
-                              controller: _driverNameController,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildFormField(
-                              label: 'Driver Contact',
-                              controller: _driverContactController,
-                              keyboardType: TextInputType.phone,
-                            ),
-                          ),
-                        ],
+                      _buildFormField(
+                        label: 'Driver Name',
+                        controller: _driverNameController,
+                      ),
+
+                      _buildFormField(
+                        label: 'Driver Contact',
+                        controller: _driverContactController,
+                        keyboardType: TextInputType.phone,
                       ),
 
                       _buildFormField(
@@ -820,7 +774,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: Color(0xFFF4C542)),
+                            side: const BorderSide(color: Color(0xFF808080)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -828,7 +782,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           child: const Text(
                             'Cancel',
                             style: TextStyle(
-                              color: Color(0xFFF4C542),
+                              color: Color(0xFF808080),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -840,7 +794,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         child: ElevatedButton(
                           onPressed: bookingProvider.isLoading ? null : _duplicateBooking,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF4C542), // Changed from Colors.blue to match Update button
+                            backgroundColor: const Color(0xFF808080),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -871,7 +825,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         child: ElevatedButton(
                           onPressed: bookingProvider.isLoading ? null : _saveBooking,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF4C542),
+                            backgroundColor: const Color(0xFF808080),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -906,7 +860,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           onPressed: () => Navigator.of(context).pop(),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: Color(0xFFF4C542)),
+                            side: const BorderSide(color: Color(0xFF808080)),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -914,7 +868,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           child: const Text(
                             'Cancel',
                             style: TextStyle(
-                              color: Color(0xFFF4C542),
+                              color: Color(0xFF808080),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -926,7 +880,7 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         child: ElevatedButton(
                           onPressed: bookingProvider.isLoading ? null : _saveBooking,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF4C542),
+                            backgroundColor: const Color(0xFF808080),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),

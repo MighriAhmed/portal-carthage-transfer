@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:portal_carthage_transfer/models/booking.dart';
 import 'package:portal_carthage_transfer/models/user.dart';
 import 'package:portal_carthage_transfer/utils/constants.dart';
+import 'package:portal_carthage_transfer/screens/booking_detail_screen.dart';
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -33,12 +34,31 @@ class BookingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     
-    return Card(
-      elevation: 2,
+    // Check if user is admin - make it more explicit
+    final isAdmin = user != null && user!.role == 'admin';
+    
+    // Debug: Print user role for troubleshooting
+    print('BookingCard Debug - User role: "${user?.role}", isAdmin: ${user?.isAdmin}, isSupplier: ${user?.isSupplier}');
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Header with booking ID and status
             Row(
@@ -47,181 +67,229 @@ class BookingCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     booking.bookingId,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith( // Reduced from headlineSmall
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5), // Reduced padding
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
                     color: _getStatusColor(booking.status),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     booking.status,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
-                      fontSize: 13, // Reduced from 14
+                      fontSize: 10,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            
+            const SizedBox(height: 4),
 
-            // Booking details in a more compact format
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildDetailRow('Pickup', dateFormat.format(booking.pickupDateTime)),
-                _buildDetailRow('Route', booking.route),
-                
-                if (user?.isAdmin == true || user?.isSupplier == true) ...[
-                  if (booking.supplier != null && booking.supplier!.isNotEmpty)
-                    _buildDetailRow('Supplier', booking.supplier!),
-                  if (booking.bookingFormName != null && booking.bookingFormName!.isNotEmpty)
-                    _buildDetailRow('Form', booking.bookingFormName!),
-                  _buildDetailRow('Source', booking.isGoogleAds ? 'Google Ads' : 'Organic'),
-                  _buildDetailRow('Price', '${booking.price}'),
+            // Booking details - compact layout
+            _buildDetailRow('Pickup', dateFormat.format(booking.pickupDateTime)),
+            _buildDetailRow('Route', booking.route),
+            
+            if (user?.isAdmin == true || user?.isSupplier == true) ...[
+              if (booking.supplier != null && booking.supplier!.isNotEmpty)
+                _buildDetailRow('Supplier', booking.supplier!),
+              if (booking.bookingFormName != null && booking.bookingFormName!.isNotEmpty)
+                _buildDetailRow('Form', booking.bookingFormName!),
+              _buildDetailRow('Source', booking.isGoogleAds ? 'Google Ads' : 'Organic'),
+              _buildDetailRow('Price', '${booking.price}'),
+            ],
+            
+            _buildDetailRow('Payment', booking.paymentName ?? ''),
+            _buildDetailRow('Earning', '${booking.earning}'),
+            _buildDetailRow('Passengers', '${booking.passengersNumber}'),
+            _buildDetailRow('Vehicle', booking.vehicleName ?? ''),
+            _buildDetailRow('Name', booking.fullName),
+            _buildDetailRow('Email', booking.emailAddress ?? ''),
+            _buildDetailRow('Phone', booking.phoneNumber ?? ''),
+            _buildDetailRow('WhatsApp', booking.whatsapp ?? ''),
+            _buildDetailRow('Flight', booking.flightNumber ?? ''),
+            
+            if (booking.extras != null && booking.extras!.isNotEmpty)
+              _buildDetailRow('Extras', booking.extras!.join(', ')),
+            
+            _buildDetailRow('Distance', booking.distance?.toString() ?? ''),
+            
+            if (booking.comment != null && booking.comment!.isNotEmpty)
+              _buildDetailRow('Comment', booking.comment!),
+            
+            const SizedBox(height: 12),
+            
+
+            
+            // Role-based button layout
+            if (isAdmin) ...[
+              // Admin sees all buttons - First row (4 buttons)
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit, size: 16),
+                      label: const Text('Edit'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        side: const BorderSide(color: Color(0xFF808080)),
+                        foregroundColor: const Color(0xFF808080),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: null, // Disabled - does nothing
+                      icon: const Icon(Icons.visibility, size: 16),
+                      label: const Text('View'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF808080),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        disabledBackgroundColor: Colors.grey[400],
+                        disabledForegroundColor: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _copyBookingDetails(context),
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: const Text('Copy'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete, size: 16),
+                      label: const Text('Delete'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
                 ],
-                
-                _buildDetailRow('Payment', booking.paymentName ?? ''),
-                _buildDetailRow('Earning', '${booking.earning}'),
-                _buildDetailRow('Passengers', '${booking.passengersNumber}'),
-                _buildDetailRow('Vehicle', booking.vehicleName ?? ''),
-                _buildDetailRow('Name', booking.fullName),
-                _buildDetailRow('Email', booking.emailAddress ?? ''),
-                _buildDetailRow('Phone', booking.phoneNumber ?? ''),
-                _buildDetailRow('WhatsApp', booking.whatsapp ?? ''),
-                _buildDetailRow('Flight', booking.flightNumber ?? ''),
-                
-                if (booking.extras != null && booking.extras!.isNotEmpty)
-                  _buildDetailRow('Extras', booking.extras!.join(', ')),
-                
-                _buildDetailRow('Distance', booking.distance?.toString() ?? ''),
-                
-                if (booking.comment != null && booking.comment!.isNotEmpty)
-                  _buildDetailRow('Comment', booking.comment!),
-              ],
-            ),
-
-            const SizedBox(height: 8),
-
-            // Action buttons - more compact layout
-            Column(
-              children: [
-                // First row of buttons - more compact
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: onEdit,
-                        icon: const Icon(Icons.edit, size: 16), // Reduced from 18
-                        label: const Text('Edit', style: TextStyle(fontSize: 13)), // Reduced from 14
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                        ),
+              ),
+              
+              const SizedBox(height: 8),
+              
+              // Communication buttons - Second row (3 buttons)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Client'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
-                    if (user?.isAdmin == true) ...[
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _copyBookingDetails(context),
-                          icon: const Icon(Icons.copy, size: 16), // Reduced from 18
-                          label: const Text('Copy', style: TextStyle(fontSize: 13)), // Reduced from 14
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Handle view post
-                            if (booking.bookingFormName == "CTR") {
-                              // Open CTR post
-                            } else if (booking.bookingFormName == "ATT") {
-                              // Open ATT post
-                            }
-                          },
-                          icon: const Icon(Icons.visibility, size: 16), // Reduced from 18
-                          label: const Text('View', style: TextStyle(fontSize: 13)), // Reduced from 14
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey[600],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: onDelete,
-                          icon: const Icon(Icons.delete, size: 16), // Reduced from 18
-                          label: const Text('Delete', style: TextStyle(fontSize: 13)), // Reduced from 14
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 4),
-                
-                // Second row of WhatsApp buttons - more compact
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onWhatsApp,
-                        icon: const Icon(Icons.message, size: 16), // Reduced from 18
-                        label: const Text('Client', style: TextStyle(fontSize: 13)), // Reduced from 14
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF25D366),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onSupplierWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Supplier'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onSupplierWhatsApp,
-                        icon: const Icon(Icons.message, size: 16), // Reduced from 18
-                        label: const Text('Supplier', style: TextStyle(fontSize: 13)), // Reduced from 14
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF25D366),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                        ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onDriverWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Driver'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: onDriverWhatsApp,
-                        icon: const Icon(Icons.message, size: 16), // Reduced from 18
-                        label: const Text('Driver', style: TextStyle(fontSize: 13)), // Reduced from 14
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF25D366),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 8), // Reduced from 10
-                        ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              // Supplier users see Edit button on first row, communication buttons on second row
+              // First row - Edit button only
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onEdit,
+                      icon: const Icon(Icons.edit, size: 16),
+                      label: const Text('Edit'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        side: const BorderSide(color: Color(0xFF808080)),
+                        foregroundColor: const Color(0xFF808080),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 8),
+              
+              // Second row - Communication buttons (Client, Supplier, Driver)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Client'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onSupplierWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Supplier'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: onDriverWhatsApp,
+                      icon: const Icon(Icons.chat, size: 16),
+                      label: const Text('Driver'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       ),
@@ -232,24 +300,24 @@ class BookingCard extends StatelessWidget {
     if (value.isEmpty) return const SizedBox.shrink();
     
     return Padding(
-      padding: const EdgeInsets.only(bottom: 3), // Reduced from 4
+      padding: const EdgeInsets.only(bottom: 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 75, // Reduced from 80
+            width: 60,
             child: Text(
               '$label:',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 14, // Reduced from 15
+                fontSize: 11,
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 14), // Reduced from 15
+              style: const TextStyle(fontSize: 11),
             ),
           ),
         ],
@@ -328,6 +396,8 @@ class BookingCard extends StatelessWidget {
     if (booking.comment != null && booking.comment!.isNotEmpty) {
       details.add('Comment: ${booking.comment}');
     }
+    
+    // Note: Excluding Source, Price, Booking Form, and Supplier as requested
     
     // Join all details with line breaks
     final textToCopy = details.join('\n');
