@@ -202,28 +202,20 @@ class BookingProvider extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print('Suppliers API response: $data');
         _suppliers = List<Map<String, dynamic>>.from(data['suppliers'] ?? []);
-        print('Parsed suppliers: $_suppliers');
       }
     } catch (e) {
-      print('Error fetching suppliers: $e');
       // Don't show error for suppliers fetch
     }
   }
 
   // Update booking
   Future<bool> updateBooking(BuildContext context, String bookingId, Map<String, dynamic> updateData) async {
-    print('BookingProvider: updateBooking called for ID: $bookingId');
     try {
       _isLoading = true;
       if (context.mounted) {
         notifyListeners();
       }
-
-      print('Update API URL: ${AppConstants.apiUrl}${AppConstants.bookingsEndpoint}/$bookingId');
-      print('Update API Headers: ${_getAuthHeaders(context)}');
-      print('Update API Body: ${jsonEncode(updateData)}');
       
       final response = await http.put(
         Uri.parse('${AppConstants.apiUrl}${AppConstants.bookingsEndpoint}/$bookingId'),
@@ -385,18 +377,11 @@ class BookingProvider extends ChangeNotifier {
       dataToSend['supplier_name'] = supplierName;
 
       final url = '${AppConstants.apiUrl}${AppConstants.suppliersEndpoint}';
-      print('Update supplier URL: $url');
-      print('Update supplier data: $dataToSend');
-      print('Update supplier headers: $headers');
-
       final response = await http.patch(
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(dataToSend),
       );
-
-      print('Update supplier response status: ${response.statusCode}');
-      print('Update supplier response body: ${response.body}');
 
       if (response.statusCode == 200) {
         // Refresh the suppliers list

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:portal_carthage_transfer/providers/booking_provider.dart';
-import 'package:portal_carthage_transfer/utils/constants.dart';
+
 
 class SupplierManagementScreen extends StatefulWidget {
   const SupplierManagementScreen({super.key});
@@ -30,7 +30,7 @@ class _SupplierManagementScreenState extends State<SupplierManagementScreen> {
     final emailController = TextEditingController(text: supplier['email'] ?? '');
     final phoneController = TextEditingController(text: supplier['phone_number'] ?? '');
     final passwordController = TextEditingController();
-    bool isPasswordVisible = false;
+
 
     showDialog(
       context: context,

@@ -10,7 +10,7 @@ import 'package:portal_carthage_transfer/widgets/booking_card.dart';
 import 'package:portal_carthage_transfer/widgets/filter_dialog.dart';
 import 'package:portal_carthage_transfer/widgets/booking_form_dialog.dart';
 import 'package:portal_carthage_transfer/widgets/supplier_form_dialog.dart';
-import 'package:portal_carthage_transfer/screens/booking_detail_screen.dart';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 class BookingListScreen extends StatefulWidget {
@@ -202,10 +202,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
     final bookingProvider = Provider.of<BookingProvider>(context);
     final user = authProvider.user;
     
-    // Calculate available height for the list
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final availableHeight = screenHeight - keyboardHeight - 200; // Account for app bar and safe areas
+
 
     return Scaffold(
       resizeToAvoidBottomInset: false,

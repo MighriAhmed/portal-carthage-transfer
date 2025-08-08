@@ -4,7 +4,7 @@ import 'package:portal_carthage_transfer/providers/auth_provider.dart';
 import 'package:portal_carthage_transfer/providers/booking_provider.dart';
 import 'package:portal_carthage_transfer/screens/booking_list_screen.dart';
 import 'package:portal_carthage_transfer/screens/supplier_management_screen.dart';
-import 'package:portal_carthage_transfer/utils/constants.dart';
+
 import 'package:portal_carthage_transfer/models/user.dart';
 
 class HomeScreen extends StatefulWidget {

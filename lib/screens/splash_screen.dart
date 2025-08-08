@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:portal_carthage_transfer/providers/auth_provider.dart';
 import 'package:portal_carthage_transfer/screens/login_screen.dart';
 import 'package:portal_carthage_transfer/screens/home_screen.dart';
-import 'package:portal_carthage_transfer/utils/constants.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen>
   
   late Animation<double> _logoScaleAnimation;
   late Animation<double> _logoOpacityAnimation;
-  late Animation<double> _textSlideAnimation;
+
   late Animation<double> _textOpacityAnimation;
   late Animation<double> _loadingOpacityAnimation;
   @override
@@ -67,13 +67,6 @@ class _SplashScreenState extends State<SplashScreen>
     ));
 
     // Text animations
-    _textSlideAnimation = Tween<double>(
-      begin: 30.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _textController,
-      curve: Curves.easeOutCubic,
-    ));
 
     _textOpacityAnimation = Tween<double>(
       begin: 0.0,

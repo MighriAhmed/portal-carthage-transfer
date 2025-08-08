@@ -5,7 +5,7 @@ import 'package:portal_carthage_transfer/providers/booking_provider.dart';
 import 'package:portal_carthage_transfer/screens/splash_screen.dart';
 import 'package:portal_carthage_transfer/screens/login_screen.dart';
 import 'package:portal_carthage_transfer/screens/home_screen.dart';
-import 'package:portal_carthage_transfer/utils/constants.dart';
+
 
 void main() {
   runApp(const MyApp());

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:portal_carthage_transfer/models/booking.dart';
 import 'package:portal_carthage_transfer/models/user.dart';
 import 'package:portal_carthage_transfer/utils/constants.dart';
-import 'package:portal_carthage_transfer/screens/booking_detail_screen.dart';
+
 
 class BookingCard extends StatelessWidget {
   final Booking booking;
@@ -37,8 +37,7 @@ class BookingCard extends StatelessWidget {
     // Check if user is admin - make it more explicit
     final isAdmin = user != null && user!.role == 'admin';
     
-    // Debug: Print user role for troubleshooting
-    print('BookingCard Debug - User role: "${user?.role}", isAdmin: ${user?.isAdmin}, isSupplier: ${user?.isSupplier}');
+
     
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

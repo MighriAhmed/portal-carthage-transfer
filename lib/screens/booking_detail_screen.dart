@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../models/booking.dart';
 import '../models/user.dart';
 import '../providers/auth_provider.dart';
-import '../providers/booking_provider.dart';
+
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -141,7 +141,6 @@ Comment: ${widget.booking.comment ?? ''}
 
   @override
   Widget build(BuildContext context) {
-    final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
     
     return Scaffold(
       backgroundColor: Colors.grey[100],
