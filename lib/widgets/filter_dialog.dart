@@ -129,7 +129,7 @@ class _FilterDialogState extends State<FilterDialog> {
                       value: name,
                       child: Text(name),
                     );
-                  }).toList(),
+                  }),
                 ],
                 onChanged: (value) {
                   setState(() {

@@ -273,7 +273,7 @@ Comment: ${widget.booking.comment ?? ''}
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     spreadRadius: 1,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
@@ -323,8 +323,11 @@ Comment: ${widget.booking.comment ?? ''}
                           children: [
                             _buildDetailRow('Route', widget.booking.route),
                             _buildDetailRow('Form', widget.booking.bookingFormName ?? ''),
-                            _buildDetailRow('Source', widget.booking.isGoogleAds ? 'Google Ads' : 'Organic'),
-                            _buildDetailRow('Price', '${widget.booking.price}'),
+                            // Only show Source and Price fields for admin users
+                            if (user?.isAdmin == true) ...[
+                              _buildDetailRow('Source', widget.booking.isGoogleAds ? 'Google Ads' : 'Organic'),
+                              _buildDetailRow('Price', '${widget.booking.price}'),
+                            ],
                             _buildDetailRow('Payment', widget.booking.paymentName ?? ''),
                             _buildDetailRow('Earning', '${widget.booking.earning}'),
                             _buildDetailRow('Passengers', '${widget.booking.passengersNumber}'),

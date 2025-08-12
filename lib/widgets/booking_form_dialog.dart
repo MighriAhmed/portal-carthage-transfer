@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:portal_carthage_transfer/providers/booking_provider.dart';
+import 'package:portal_carthage_transfer/providers/auth_provider.dart';
 import 'package:portal_carthage_transfer/models/booking.dart';
 
 class BookingFormDialog extends StatefulWidget {
@@ -156,15 +157,27 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
     }
 
     final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
+    
+    // For supplier users, preserve original supplier and price values
+    String supplierValue = _selectedSupplier;
+    double priceValue = _price;
+    
+    if (user?.isSupplier == true && widget.booking != null) {
+      // Keep original values for suppliers editing existing bookings
+      supplierValue = widget.booking!.supplier ?? '';
+      priceValue = widget.booking!.price;
+    }
     
     final bookingData = {
       'booking_id': _bookingIdController.text.trim(),
       'status': _selectedStatus,
       'pickup_datetime': _pickupDateTime!.toString().substring(0, 19).replaceAll('T', ' '),
       'addresses': _addressesController.text.split('→').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
-      'supplier': _selectedSupplier.isEmpty ? '' : _selectedSupplier,
+      'supplier': supplierValue.isEmpty ? '' : supplierValue,
       'booking_form_name': widget.booking?.bookingFormName ?? '',
-      'price': _price,
+      'price': priceValue,
       'earning': _earning,
       'passengers_number': _passengersNumber,
       'vehicle_name': _vehicleNameController.text.trim(),
@@ -207,18 +220,30 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
     }
 
     final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final user = authProvider.user;
     
     // Generate a new booking ID (you might want to implement a more sophisticated ID generation)
     final newBookingId = '${_bookingIdController.text.trim()}_copy';
+    
+    // For supplier users, preserve original supplier and price values
+    String supplierValue = _selectedSupplier;
+    double priceValue = _price;
+    
+    if (user?.isSupplier == true && widget.booking != null) {
+      // Keep original values for suppliers duplicating existing bookings
+      supplierValue = widget.booking!.supplier ?? '';
+      priceValue = widget.booking!.price;
+    }
     
     final bookingData = {
       'booking_id': newBookingId,
       'status': 'Pending', // Reset status to Pending for new booking
       'pickup_datetime': _pickupDateTime!.toString().substring(0, 19).replaceAll('T', ' '),
       'addresses': _addressesController.text.split('→').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
-      'supplier': _selectedSupplier.isEmpty ? '' : _selectedSupplier,
+      'supplier': supplierValue.isEmpty ? '' : supplierValue,
       'booking_form_name': widget.booking?.bookingFormName ?? '',
-      'price': _price,
+      'price': priceValue,
       'earning': _earning,
       'passengers_number': _passengersNumber,
       'vehicle_name': _vehicleNameController.text.trim(),
@@ -493,28 +518,37 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         },
                       ),
 
-                      // Supplier Selection with clarification
-                      Consumer<BookingProvider>(
-                        builder: (context, bookingProvider, child) {
-                          return _buildDropdownField(
-                            label: 'Supplier (Select existing or leave empty)',
-                            value: _selectedSupplier,
-                            items: [
-                              const DropdownMenuItem<String>(value: '', child: Text('No Supplier')),
-                              ...bookingProvider.suppliers.map<DropdownMenuItem<String>>((supplier) {
-                                final name = supplier['name'] ?? supplier['supplier_name'] ?? supplier['username'] ?? supplier.toString();
-                                return DropdownMenuItem<String>(
-                                  value: name,
-                                  child: Text(name),
+                      // Supplier Selection with clarification - hidden for supplier users
+                      Consumer<AuthProvider>(
+                        builder: (context, authProvider, child) {
+                          final user = authProvider.user;
+                          // Only show supplier field for admin users, not for supplier users
+                          if (user?.isAdmin == true) {
+                            return Consumer<BookingProvider>(
+                              builder: (context, bookingProvider, child) {
+                                return _buildDropdownField(
+                                  label: 'Supplier (Select existing or leave empty)',
+                                  value: _selectedSupplier,
+                                  items: [
+                                    const DropdownMenuItem<String>(value: '', child: Text('No Supplier')),
+                                    ...bookingProvider.suppliers.map<DropdownMenuItem<String>>((supplier) {
+                                      final name = supplier['name'] ?? supplier['supplier_name'] ?? supplier['username'] ?? supplier.toString();
+                                      return DropdownMenuItem<String>(
+                                        value: name,
+                                        child: Text(name),
+                                      );
+                                    }),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _selectedSupplier = value ?? '';
+                                    });
+                                  },
                                 );
-                              }).toList(),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                _selectedSupplier = value ?? '';
-                              });
-                            },
-                          );
+                              },
+                            );
+                          }
+                          return const SizedBox.shrink(); // Hide the field for supplier users
                         },
                       ),
 
@@ -639,34 +673,44 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                         ),
                       ),
 
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16.0),
-                        child: TextFormField(
-                          controller: TextEditingController(text: _price.toString()),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Price',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            labelStyle: const TextStyle(color: Color(0xFF808080)),
-                          ),
-                          onChanged: (value) {
-                            _price = double.tryParse(value) ?? 0.0;
-                          },
-                        ),
+                      // Price field - hidden for supplier users
+                      Consumer<AuthProvider>(
+                        builder: (context, authProvider, child) {
+                          final user = authProvider.user;
+                          // Only show price field for admin users, not for supplier users
+                          if (user?.isAdmin == true) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 16.0),
+                              child: TextFormField(
+                                controller: TextEditingController(text: _price.toString()),
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: 'Price',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFFE0E0E0)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFF808080), width: 2),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.grey[50],
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  labelStyle: const TextStyle(color: Color(0xFF808080)),
+                                ),
+                                onChanged: (value) {
+                                  _price = double.tryParse(value) ?? 0.0;
+                                },
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink(); // Hide the field for supplier users
+                        },
                       ),
 
                       Padding(
@@ -789,36 +833,45 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: bookingProvider.isLoading ? null : _duplicateBooking,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF808080),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 2,
-                          ),
-                          child: bookingProvider.isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      // Duplicate button - hidden for supplier users
+                      Consumer<AuthProvider>(
+                        builder: (context, authProvider, child) {
+                          final user = authProvider.user;
+                          // Only show duplicate button for admin users, not for supplier users
+                          if (user?.isAdmin == true) {
+                            return Expanded(
+                              child: ElevatedButton(
+                                onPressed: bookingProvider.isLoading ? null : _duplicateBooking,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF808080),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                )
-                              : const Text(
-                                  'Duplicate',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  elevation: 2,
                                 ),
-                        ),
+                                child: bookingProvider.isLoading
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Duplicate',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink(); // Hide the button for supplier users
+                        },
                       ),
                       const SizedBox(width: 12),
                       Expanded(

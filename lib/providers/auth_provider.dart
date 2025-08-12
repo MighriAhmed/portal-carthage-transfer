@@ -50,15 +50,15 @@ class AuthProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
+      // Convert to form data format
+      final body = 'username=${Uri.encodeComponent(username)}&password=${Uri.encodeComponent(password)}';
+
       final response = await http.post(
         Uri.parse('${AppConstants.apiUrl}${AppConstants.loginEndpoint}'),
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: {
-          'username': username,
-          'password': password,
-        },
+        body: body,
       );
 
       if (response.statusCode == 200) {
@@ -78,7 +78,21 @@ class AuthProvider extends ChangeNotifier {
         return true;
       } else {
         final errorData = jsonDecode(response.body);
-        _error = errorData['detail'] ?? 'Login failed';
+        
+        // Handle different error response formats
+        if (errorData['detail'] is List) {
+          // Handle validation errors (422 status)
+          final validationErrors = errorData['detail'] as List;
+          final errorMessages = validationErrors
+              .map((error) => error['msg'] ?? 'Validation error')
+              .join(', ');
+          _error = errorMessages;
+        } else if (errorData['detail'] is String) {
+          _error = errorData['detail'];
+        } else {
+          _error = 'Login failed';
+        }
+        
         _isLoading = false;
         notifyListeners();
         return false;

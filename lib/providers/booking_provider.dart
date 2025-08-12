@@ -203,6 +203,10 @@ class BookingProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _suppliers = List<Map<String, dynamic>>.from(data['suppliers'] ?? []);
+        // Notify listeners that suppliers data has changed
+        if (context.mounted) {
+          notifyListeners();
+        }
       }
     } catch (e) {
       // Don't show error for suppliers fetch
@@ -372,18 +376,19 @@ class BookingProvider extends ChangeNotifier {
       final headers = Map<String, String>.from(_getAuthHeaders(context));
       headers['Content-Type'] = 'application/json';
 
-      // Add the supplier name to the update data
+      // Create the update data with the supplier name as identifier
       final dataToSend = Map<String, dynamic>.from(updateData);
-      dataToSend['supplier_name'] = supplierName;
-
-      final url = '${AppConstants.apiUrl}${AppConstants.suppliersEndpoint}';
-      final response = await http.patch(
+      
+      // Use PUT method on /suppliers/{id} endpoint
+      final url = '${AppConstants.apiUrl}${AppConstants.suppliersEndpoint}/$supplierName';
+      
+      final response = await http.put(
         Uri.parse(url),
         headers: headers,
         body: jsonEncode(dataToSend),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 204) {
         // Refresh the suppliers list
         await fetchSuppliers(context);
         return true;
@@ -405,6 +410,16 @@ class BookingProvider extends ChangeNotifier {
         } catch (e) {
           _error = 'Failed to update supplier (Status: ${response.statusCode})';
         }
+        
+        // Show error to user
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(_error ?? 'Failed to update supplier'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
         return false;
       }
     } catch (e) {
@@ -421,18 +436,7 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Test API connection
-  Future<bool> testConnection(BuildContext context) async {
-    try {
-      final response = await http.get(
-        Uri.parse('${AppConstants.apiUrl}/health'),
-        headers: _getAuthHeaders(context),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      return false;
-    }
-  }
+
 
   // Helper methods
   String _formatDateForBackend(DateTime date) {

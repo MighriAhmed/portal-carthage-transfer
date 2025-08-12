@@ -46,7 +46,7 @@ class BookingCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             spreadRadius: 1,
             blurRadius: 3,
             offset: const Offset(0, 1),
@@ -95,11 +95,20 @@ class BookingCard extends StatelessWidget {
             _buildDetailRow('Pickup', dateFormat.format(booking.pickupDateTime)),
             _buildDetailRow('Route', booking.route),
             
-            if (user?.isAdmin == true || user?.isSupplier == true) ...[
+            // Show supplier field for admin users only, hide it for supplier users
+            if (user?.isAdmin == true) ...[
               if (booking.supplier != null && booking.supplier!.isNotEmpty)
                 _buildDetailRow('Supplier', booking.supplier!),
+            ],
+            
+            // Show form field for both admin and supplier users
+            if (user?.isAdmin == true || user?.isSupplier == true) ...[
               if (booking.bookingFormName != null && booking.bookingFormName!.isNotEmpty)
                 _buildDetailRow('Form', booking.bookingFormName!),
+            ],
+            
+            // Only show Source and Price fields for admin users
+            if (user?.isAdmin == true) ...[
               _buildDetailRow('Source', booking.isGoogleAds ? 'Google Ads' : 'Organic'),
               _buildDetailRow('Price', '${booking.price}'),
             ],

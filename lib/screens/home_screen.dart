@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 60,
                             height: 60,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
