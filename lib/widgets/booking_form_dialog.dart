@@ -811,35 +811,41 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                 ),
               ),
               child: widget.booking != null 
-                ? Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: const BorderSide(color: Color(0xFF808080)),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                ? Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      final user = authProvider.user;
+                      final isAdmin = user?.isAdmin == true;
+                      
+                      return Row(
+                        children: [
+                          // Cancel button
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                side: const BorderSide(color: Color(0xFF808080)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  color: Color(0xFF808080),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xFF808080),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Duplicate button - hidden for supplier users
-                      Consumer<AuthProvider>(
-                        builder: (context, authProvider, child) {
-                          final user = authProvider.user;
-                          // Only show duplicate button for admin users, not for supplier users
-                          if (user?.isAdmin == true) {
-                            return Expanded(
+                          
+                          // Spacing between buttons
+                          if (isAdmin) const SizedBox(width: 12),
+                          
+                          // Duplicate button - only for admin users
+                          if (isAdmin)
+                            Expanded(
                               child: ElevatedButton(
                                 onPressed: bookingProvider.isLoading ? null : _duplicateBooking,
                                 style: ElevatedButton.styleFrom(
@@ -868,43 +874,45 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
                                         ),
                                       ),
                               ),
-                            );
-                          }
-                          return const SizedBox.shrink(); // Hide the button for supplier users
-                        },
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: bookingProvider.isLoading ? null : _saveBooking,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF808080),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
                             ),
-                            elevation: 2,
-                          ),
-                          child: bookingProvider.isLoading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : const Text(
-                                  'Update',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          
+                          // Spacing between buttons
+                          const SizedBox(width: 12),
+                          
+                          // Update button
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: bookingProvider.isLoading ? null : _saveBooking,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF808080),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                        ),
-                      ),
-                    ],
+                                elevation: 2,
+                              ),
+                              child: bookingProvider.isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   )
                 : Row(
                     children: [
