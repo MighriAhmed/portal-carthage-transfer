@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:portal_carthage_transfer/models/booking.dart';
 import 'package:portal_carthage_transfer/models/user.dart';
 import 'package:portal_carthage_transfer/utils/constants.dart';
@@ -28,6 +29,25 @@ class BookingCard extends StatelessWidget {
 
   Color _getStatusColor(String status) {
     return Color(AppConstants.statusColors[status] ?? 0xFF9E9E9E);
+  }
+
+  void _openWordPressAdmin() async {
+    String adminUrl;
+    
+    // Determine which WordPress admin to open based on booking form type
+    if (booking.bookingFormName == 'CTR') {
+      adminUrl = '${AppConstants.ctrWordPressAdminUrl}${booking.id}';
+    } else if (booking.bookingFormName == 'ATT') {
+      adminUrl = '${AppConstants.attWordPressAdminUrl}${booking.id}';
+    } else {
+      // Default to CTR if form type is not specified
+      adminUrl = '${AppConstants.ctrWordPressAdminUrl}${booking.id}';
+    }
+    
+    final uri = Uri.parse(adminUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
@@ -155,14 +175,12 @@ class BookingCard extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: null, // Disabled - does nothing
+                      onPressed: _openWordPressAdmin,
                       icon: const Icon(Icons.visibility, size: 16),
                       label: const Text('View'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF808080),
                         padding: const EdgeInsets.symmetric(vertical: 8),
-                        disabledBackgroundColor: Colors.grey[400],
-                        disabledForegroundColor: Colors.grey[600],
                       ),
                     ),
                   ),

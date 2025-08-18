@@ -10,6 +10,10 @@ class AppConstants {
   static const String latestBookingsEndpoint = '/latest_bookings';
   static const String suppliersEndpoint = '/suppliers';
   
+  // WordPress Admin URLs
+  static const String ctrWordPressAdminUrl = 'https://carthage-transfer.com/wp-admin/post.php?action=edit&post=';
+  static const String attWordPressAdminUrl = 'https://airporttransfertunisia.com/wp-admin/post.php?action=edit&post=';
+  
   // App Configuration
   static const String appName = 'Carthage Transfer';
   static const String appVersion = '1.0.0';
