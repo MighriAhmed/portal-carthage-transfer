@@ -87,7 +87,14 @@ class _BookingFormDialogState extends State<BookingFormDialog> {
     _addressesController.text = booking.addresses.join(' → ');
     _extrasController.text = booking.extras?.join(', ') ?? '';
     
-    _selectedStatus = booking.status;
+    // Normalize status to match dropdown options (capitalize first letter)
+    final status = booking.status;
+    if (status.isNotEmpty) {
+      _selectedStatus = status[0].toUpperCase() + status.substring(1).toLowerCase();
+    } else {
+      _selectedStatus = 'Pending';
+    }
+    
     _selectedSupplier = booking.supplier ?? '';
     _selectedPayment = booking.paymentName ?? '';
     _pickupDateTime = booking.pickupDateTime;

@@ -26,6 +26,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
   String _selectedSupplier = '';
   DateTime? _startDate;
   DateTime? _endDate;
+  bool _isPoolView = false; // New state for Pool view
 
   @override
   void initState() {
@@ -82,6 +83,76 @@ class _BookingListScreenState extends State<BookingListScreen> {
     }
   }
 
+  Future<void> _enterPoolView() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isPoolView = true;
+    });
+    
+    final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+    await bookingProvider.fetchPoolBookings(context);
+  }
+
+  Future<void> _exitPoolView() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isPoolView = false;
+    });
+    
+    // Return to normal view
+    await _loadInitialData();
+  }
+
+  Future<void> _acceptPoolBooking(Booking booking) async {
+    if (!mounted) return;
+    
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Accept Booking'),
+        content: const Text('Are you sure you want to accept this booking?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Accept'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+      final success = await bookingProvider.acceptPoolBooking(context, booking.id);
+      
+      if (success && mounted) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Booking accepted successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Exit Pool view and redirect to Home
+        setState(() {
+          _isPoolView = false;
+        });
+        
+        // Navigate to home page
+        if (mounted) {
+          Navigator.of(context).pushReplacementNamed('/home');
+        }
+      }
+    }
+  }
+
   Future<void> _applyFilters() async {
     if (!mounted) return;
     
@@ -90,14 +161,19 @@ class _BookingListScreenState extends State<BookingListScreen> {
     
     if (mounted) {
       if (authProvider.user?.isSupplier == true) {
-        // Suppliers can filter by status and search, but see all bookings
-        await bookingProvider.fetchBookings(
-          context,
-          bookingId: _searchController.text.trim(),
-          status: _selectedStatus,
-          setLoading: true,
-          isSupplier: true,
-        );
+        if (_isPoolView) {
+          // In Pool view, suppliers see only unassigned bookings
+          await bookingProvider.fetchPoolBookings(context);
+        } else {
+          // Suppliers can filter by status and search, but see all bookings
+          await bookingProvider.fetchBookings(
+            context,
+            bookingId: _searchController.text.trim(),
+            status: _selectedStatus,
+            setLoading: true,
+            isSupplier: true,
+          );
+        }
       } else {
         // Admins can apply all filters
         await bookingProvider.fetchBookings(
@@ -121,8 +197,13 @@ class _BookingListScreenState extends State<BookingListScreen> {
     
     if (mounted) {
       if (authProvider.user?.isSupplier == true) {
-        // Suppliers see latest bookings without filters
-        await bookingProvider.fetchLatestBookings(context);
+        if (_isPoolView) {
+          // In Pool view, stay in Pool view
+          await bookingProvider.fetchPoolBookings(context);
+        } else {
+          // Suppliers see latest bookings without filters
+          await bookingProvider.fetchLatestBookings(context);
+        }
       } else {
         // Admins see latest bookings with supplier filter
         await bookingProvider.fetchLatestBookings(context);
@@ -297,6 +378,23 @@ class _BookingListScreenState extends State<BookingListScreen> {
                       ],
                     ),
                   ],
+                  // Pool button for suppliers only
+                  if (user?.isSupplier == true) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _isPoolView ? _exitPoolView : _enterPoolView,
+                            child: Text(_isPoolView ? 'Exit Pool' : 'Pool'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isPoolView ? Colors.orange : const Color(0xFF808080),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -358,6 +456,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
                                 return BookingCard(
                                   booking: booking,
                                   user: user,
+                                  isPoolView: _isPoolView, // Pass Pool view state
                                   onEdit: () {
                                     _showEditBookingDialog(booking);
                                   },
@@ -399,6 +498,7 @@ class _BookingListScreenState extends State<BookingListScreen> {
                                       }
                                     }
                                   },
+                                  onAccept: _isPoolView ? () => _acceptPoolBooking(booking) : null, // Add accept callback for Pool view
                                   onWhatsApp: () {
                                     _showWhatsAppLanguageDialog(booking);
                                   },

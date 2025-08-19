@@ -8,6 +8,7 @@ class AppConstants {
   static const String bookingsEndpoint = '/bookings';
   static const String allBookingsEndpoint = '/all_bookings';
   static const String latestBookingsEndpoint = '/latest_bookings';
+  static const String poolBookingsEndpoint = '/pool_bookings'; // New endpoint for unassigned bookings
   static const String suppliersEndpoint = '/suppliers';
   
   // WordPress Admin URLs

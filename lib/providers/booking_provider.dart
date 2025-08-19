@@ -192,6 +192,95 @@ class BookingProvider extends ChangeNotifier {
     }
   }
 
+  // Fetch pool bookings (unassigned bookings for suppliers)
+  Future<void> fetchPoolBookings(BuildContext context) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      _isLatest = false;
+      if (context.mounted) {
+        notifyListeners();
+      }
+
+      final uri = Uri.parse('${AppConstants.apiUrl}${AppConstants.poolBookingsEndpoint}');
+      final response = await http.get(uri, headers: _getAuthHeaders(context));
+
+      if (response.statusCode == 200) {
+        final dynamic responseData = jsonDecode(response.body);
+        
+        List<dynamic> data;
+        if (responseData is List) {
+          data = responseData;
+        } else if (responseData is Map<String, dynamic>) {
+          if (responseData.containsKey('data')) {
+            data = responseData['data'] is List ? responseData['data'] : [];
+          } else if (responseData.containsKey('bookings')) {
+            data = responseData['bookings'] is List ? responseData['bookings'] : [];
+          } else if (responseData.containsKey('results')) {
+            data = responseData['results'] is List ? responseData['results'] : [];
+          } else {
+            data = [];
+          }
+        } else {
+          data = [];
+        }
+
+        _bookings = data.map((json) => Booking.fromJson(json)).toList();
+        _error = null;
+      } else {
+        _error = 'Failed to load pool bookings: ${response.statusCode}';
+        _bookings = [];
+      }
+    } catch (e) {
+      _error = 'Error loading pool bookings: $e';
+      _bookings = [];
+    } finally {
+      _isLoading = false;
+      if (context.mounted) {
+        notifyListeners();
+      }
+    }
+  }
+
+  // Accept a pool booking (assign to supplier)
+  Future<bool> acceptPoolBooking(BuildContext context, String bookingId) async {
+    try {
+      _isLoading = true;
+      if (context.mounted) {
+        notifyListeners();
+      }
+
+      final uri = Uri.parse('${AppConstants.apiUrl}${AppConstants.bookingsEndpoint}/$bookingId/accept');
+      final response = await http.post(uri, headers: _getAuthHeaders(context));
+
+      if (response.statusCode == 200) {
+        // Remove the accepted booking from the pool
+        _bookings.removeWhere((booking) => booking.id == bookingId);
+        if (context.mounted) {
+          notifyListeners();
+        }
+        return true;
+      } else {
+        _error = 'Failed to accept booking: ${response.statusCode}';
+        if (context.mounted) {
+          notifyListeners();
+        }
+        return false;
+      }
+    } catch (e) {
+      _error = 'Error accepting booking: $e';
+      if (context.mounted) {
+        notifyListeners();
+      }
+      return false;
+    } finally {
+      _isLoading = false;
+      if (context.mounted) {
+        notifyListeners();
+      }
+    }
+  }
+
   // Fetch suppliers (admin only)
   Future<void> fetchSuppliers(BuildContext context) async {
     try {

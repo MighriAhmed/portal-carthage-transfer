@@ -10,8 +10,10 @@ import 'package:portal_carthage_transfer/utils/constants.dart';
 class BookingCard extends StatelessWidget {
   final Booking booking;
   final User? user;
+  final bool isPoolView; // New parameter for Pool view
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onAccept; // New callback for accepting pool bookings
   final VoidCallback onWhatsApp;
   final VoidCallback onSupplierWhatsApp;
   final VoidCallback onDriverWhatsApp;
@@ -20,15 +22,22 @@ class BookingCard extends StatelessWidget {
     super.key,
     required this.booking,
     required this.user,
+    this.isPoolView = false, // Default to false
     required this.onEdit,
     required this.onDelete,
+    this.onAccept, // Optional callback
     required this.onWhatsApp,
     required this.onSupplierWhatsApp,
     required this.onDriverWhatsApp,
   });
 
   Color _getStatusColor(String status) {
-    return Color(AppConstants.statusColors[status] ?? 0xFF9E9E9E);
+    // Normalize status to match the keys in statusColors
+    String normalizedStatus = status;
+    if (status.toLowerCase() == 'approved') {
+      normalizedStatus = 'Approved';
+    }
+    return Color(AppConstants.statusColors[normalizedStatus] ?? 0xFF9E9E9E);
   }
 
   void _openWordPressAdmin() async {
@@ -254,67 +263,87 @@ class BookingCard extends StatelessWidget {
                 ],
               ),
             ] else ...[
-              // Supplier users see Edit button on first row, communication buttons on second row
-              // First row - Edit button only
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: onEdit,
-                      icon: const Icon(Icons.edit, size: 16),
-                      label: const Text('Edit'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        side: const BorderSide(color: Color(0xFF808080)),
-                        foregroundColor: const Color(0xFF808080),
+              // Supplier users see different buttons based on Pool view
+              if (isPoolView) ...[
+                // Pool view - only Accept button
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onAccept ?? () {}, // Use accept callback if provided
+                        icon: const Icon(Icons.check, size: 16),
+                        label: const Text('Accept'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              
-              const SizedBox(height: 8),
-              
-              // Second row - Communication buttons (Client, Supplier, Driver)
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: onWhatsApp,
-                      icon: const Icon(Icons.chat, size: 16),
-                      label: const Text('Client'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                  ],
+                ),
+              ] else ...[
+                // Normal view - Edit button on first row, communication buttons on second row
+                // First row - Edit button only
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: onEdit,
+                        icon: const Icon(Icons.edit, size: 16),
+                        label: const Text('Edit'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          side: const BorderSide(color: Color(0xFF808080)),
+                          foregroundColor: const Color(0xFF808080),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: onSupplierWhatsApp,
-                      icon: const Icon(Icons.chat, size: 16),
-                      label: const Text('Supplier'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                  ],
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Second row - Communication buttons (Client, Supplier, Driver)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onWhatsApp,
+                        icon: const Icon(Icons.chat, size: 16),
+                        label: const Text('Client'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: onDriverWhatsApp,
-                      icon: const Icon(Icons.chat, size: 16),
-                      label: const Text('Driver'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 8),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onSupplierWhatsApp,
+                        icon: const Icon(Icons.chat, size: 16),
+                        label: const Text('Supplier'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: onDriverWhatsApp,
+                        icon: const Icon(Icons.chat, size: 16),
+                        label: const Text('Driver'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ],
         ),
